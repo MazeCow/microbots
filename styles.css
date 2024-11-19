@@ -1,0 +1,169 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+header {
+  margin: 0 10% 0 10%;
+  text-align: center;
+}
+
+/* Board Styling */
+.board {
+  width: 100%;
+  justify-content: center;
+  margin: auto;
+  display: grid;
+}
+
+.grid {
+  display: grid;
+  grid-template-rows: repeat(6, 1fr);
+  grid-template-columns: repeat(6, 1fr);
+  gap: 3px;
+  background-color: black;
+  width: min-content;
+  height: min-content;
+  border: 3px solid black;
+  grid-column: 2 / 4;
+  grid-row: 2 / 4;
+}
+
+.left-buttons,
+.right-buttons,
+.top-buttons,
+.bottom-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 0px;
+}
+
+.left-buttons,
+.right-buttons {
+  width: min(7vw, 7vh);
+}
+
+.top-buttons,
+.bottom-buttons {
+  height: min(7vw, 7vh);
+}
+
+.left-buttons {
+  grid-column: 1 / 2;
+  grid-row: 2 / 4;
+  flex-direction: column;
+}
+
+.right-buttons {
+  grid-column: 4 / 5;
+  grid-row: 2 / 4;
+  flex-direction: column;
+}
+
+.top-buttons {
+  grid-column: 2 / 4;
+  grid-row: 1 / 2;
+  flex-direction: row;
+}
+
+.bottom-buttons {
+  grid-column: 2 / span 2;
+  grid-row: 4;
+  flex-direction: row;
+}
+
+.top-buttons .rotate-btn {
+  border-bottom: none;
+}
+
+.top-buttons .rotate-btn:nth-child(1) {
+  border-top-left-radius: 20px;
+  border-right: none;
+}
+
+.top-buttons .rotate-btn:nth-child(2) {
+  border-top-right-radius: 20px;
+}
+
+.left-buttons .rotate-btn {
+  border-right: none;
+}
+
+.left-buttons .rotate-btn:nth-child(1) {
+  border-top-left-radius: 20px;
+  border-bottom: none;
+}
+
+.left-buttons .rotate-btn:nth-child(2) {
+  border-bottom-left-radius: 20px;
+}
+
+.right-buttons .rotate-btn {
+  border-left: none;
+}
+
+.right-buttons .rotate-btn:nth-child(1) {
+  border-top-right-radius: 20px;
+  border-bottom: none;
+}
+
+.right-buttons .rotate-btn:nth-child(2) {
+  border-bottom-right-radius: 20px;
+}
+
+.bottom-buttons .rotate-btn {
+  border-top: none;
+}
+
+.bottom-buttons .rotate-btn:nth-child(1) {
+  border-bottom-left-radius: 20px;
+  border-right: none;
+}
+
+.bottom-buttons .rotate-btn:nth-child(2) {
+  border-bottom-right-radius: 20px;
+}
+
+.rotate-btn {
+  width: 100%;
+  height: 100%;
+  border: 3px solid black;
+  background-color: rgb(151, 177, 226);
+}
+
+.cell {
+  display: flex;
+  width: min(10vw, 10vh);
+  height: min(10vw, 10vh);
+  justify-content: center;
+  align-items: center;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: min(7vw, 7vh);
+}
+
+.cell.pink {
+  background-color: pink;
+}
+
+.cell.green {
+  background-color: green;
+}
+
+.cell.red {
+  background-color: red;
+}
+
+.cell.yellow {
+  background-color: yellow;
+}
+
+.cell.blue {
+  background-color: blue;
+}
+
+.cell.white {
+  background-color: white;
+}
