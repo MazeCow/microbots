@@ -1,5 +1,6 @@
 * {
   box-sizing: border-box;
+  user-select: none;
 }
 
 body {
@@ -15,7 +16,7 @@ header {
 .board {
   width: 100%;
   justify-content: center;
-  margin: auto;
+  margin: 30px 0 0 0;
   display: grid;
 }
 
@@ -134,6 +135,11 @@ header {
   background-color: rgb(151, 177, 226);
 }
 
+.rotate-btn:hover {
+  cursor: pointer;
+  filter: brightness(0.95);
+}
+
 .cell {
   display: flex;
   width: min(10vw, 10vh);
@@ -142,6 +148,11 @@ header {
   align-items: center;
   font-family: Arial, Helvetica, sans-serif;
   font-size: min(7vw, 7vh);
+}
+
+.cell:hover {
+  cursor: pointer;
+  filter: brightness(0.9);
 }
 
 .cell.pink {
@@ -166,4 +177,48 @@ header {
 
 .cell.white {
   background-color: white;
+}
+
+.right-arrow {
+  background-image: url("images/right-arrow.svg");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.left-arrow {
+  background-image: url("images/left-arrow.svg");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.up-arrow {
+  background-image: url("images/up-arrow.svg");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.down-arrow {
+  background-image: url("images/down-arrow.svg");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.end {
+  border: 5px solid rgb(9, 255, 0);
+  margin: -5px;
+  border-radius: 10px;
+  z-index: 1;
+  box-sizing: content-box;
+}
+
+.start {
+  border: 5px solid rgb(255, 0, 255);
+  margin: -5px;
+  border-radius: 10px;
+  z-index: 2;
+  box-sizing: content-box;
 }

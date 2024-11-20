@@ -17,7 +17,7 @@ const matrices = [
   [
     ["P6", "Y5", "P1"],
     ["R1", "B5", "Y6"],
-    ["G1", "R1", "Y1"],
+    ["G1", "R5", "Y1"],
   ],
 ];
 
@@ -44,6 +44,27 @@ function parseCellString(string) {
   return [colorDict[string.substring(0, 1)], string.substring(1, 2)];
 }
 
+function checkMoveValidity(row1, col1, row2, col2) {
+  let cell1 = board[row1][col1];
+  let color1 = cell1.classList[0];
+  let letter1 = cell1.children[0].innerHTML;
+
+  let cell2 = board[row2][col2];
+  let color2 = cell2.classList[0];
+  let letter2 = cell2.children[0].innerHTML;
+
+  if (color1 === color2 || letter1 === letter2) {
+    return true;
+  }
+}
+
+const cellPath = [];
+
+function clickCell() {
+  let row = this.getAttribute("row");
+  let col = this.getAttribute("col");
+}
+
 function generateBoard() {
   /* Select board grid element on webpage */
   const grid = document.getElementsByClassName("grid")[0];
@@ -68,6 +89,9 @@ function generateBoard() {
       textContainer.innerHTML = number;
       divCell.appendChild(textContainer);
 
+      /* Add an event listener to the cell. */
+      divCell.addEventListener("click", clickCell);
+
       /* Append the cell to the grid */
       grid.append(divCell);
     }
@@ -75,3 +99,30 @@ function generateBoard() {
 }
 
 generateBoard();
+
+function getRandomInt(max) {
+  return Math.floor(Math.random() * max);
+}
+
+function locateElement(row, col) {
+  return document.querySelector(`[row="${row}"][col="${col}"]`);
+}
+
+let startRow = getRandomInt(6);
+let startCol = getRandomInt(6);
+let endRow = getRandomInt(6);
+let endCol = getRandomInt(6);
+
+while (
+  (startRow === endRow || startRow + 1 === endRow || startRow - 1 === endRow) &&
+  (startCol === endCol || startCol + 1 === endCol || startCol - 1 === endCol)
+) {
+  endRow = getRandomInt(6);
+  endCol = getRandomInt(6);
+}
+
+let startCell = locateElement(startRow, startCol);
+let endCell = locateElement(endRow, endCol);
+
+startCell.classList.add("start");
+endCell.classList.add("end");
