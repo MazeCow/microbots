@@ -1,3 +1,4 @@
+/* Board matricies */
 const matrices = [
   [
     ["P5", "P2", "P3"],
@@ -21,16 +22,10 @@ const matrices = [
   ],
 ];
 
+/* Complete board */
 const board = [[] * 6];
-function buildBoard() {
-  for (let i = 0; i < 3; i++) {
-    board[i] = matrices[0][i].concat(matrices[1][i]);
-    board[i + 3] = matrices[2][i].concat(matrices[3][i]);
-  }
-  console.log(board);
-}
-buildBoard();
 
+/* Color dictionary used to convert letters to the corresponding colors */
 const colorDict = {
   P: "pink",
   Y: "yellow",
@@ -40,34 +35,90 @@ const colorDict = {
   G: "green",
 };
 
+/* The current path */
+let cellPath = [];
+
+function rotateMatrix(clockwise) {
+  if (clockwise) {
+    let temp = matrices[0];
+    matrices[0] = matrices[3];
+    matrices[3] = matrices[2];
+    matrices[2] = matrices[1];
+    matrices[1] = temp;
+  } else {
+    let temp = matrices[0];
+    matrices[0] = matrices[1];
+    matrices[1] = matrices[2];
+    matrices[2] = matrices[3];
+    matrices[3] = temp;
+  }
+  buildBoard();
+  generateBoard();
+}
+
+/* Construct the board from the matricies. */
+function buildBoard() {
+  for (let i = 0; i < 3; i++) {
+    board[i] = matrices[0][i].concat(matrices[1][i]);
+    board[i + 3] = matrices[2][i].concat(matrices[3][i]);
+  }
+  console.log(board);
+}
+
+/* Extract the color and number from a cell string */
 function parseCellString(string) {
   return [colorDict[string.substring(0, 1)], string.substring(1, 2)];
 }
 
+/* Check the validity of a movement between two cells */
 function checkMoveValidity(row1, col1, row2, col2) {
   let cell1 = board[row1][col1];
-  let color1 = cell1.classList[0];
-  let letter1 = cell1.children[0].innerHTML;
+  let color1 = colorDict[cell1.substring(0, 1)];
+  let number1 = cell1.substring(1, 2);
+  console.log(`CELL1: ${cell1}, ROW: ${row1}, COL: ${col1}`);
 
   let cell2 = board[row2][col2];
-  let color2 = cell2.classList[0];
-  let letter2 = cell2.children[0].innerHTML;
+  let color2 = colorDict[cell2.substring(0, 1)];
+  let number2 = cell2.substring(1, 2);
+  console.log(`CELL2: ${cell2}, ROW: ${row2}, COL: ${col2}`);
 
-  if (color1 === color2 || letter1 === letter2) {
+  if (
+    (color1 == color2 || number1 == number2) &&
+    (row1 == row2 || col1 == col2)
+  ) {
     return true;
+  } else {
+    return false;
   }
 }
 
-const cellPath = [];
-
+/* Function used as an event for cell clicks. */
 function clickCell() {
-  let row = this.getAttribute("row");
-  let col = this.getAttribute("col");
+  let row = parseInt(this.getAttribute("row"));
+  let col = parseInt(this.getAttribute("col"));
+
+  if (
+    checkMoveValidity(
+      cellPath[cellPath.length - 1][0],
+      cellPath[cellPath.length - 1][1],
+      row,
+      col
+    )
+  ) {
+    console.log("Valid move.");
+    cellPath.push([row, col]);
+  } else {
+    console.log("Invalid move.");
+  }
 }
 
+/* Generate the board */
 function generateBoard() {
   /* Select board grid element on webpage */
   const grid = document.getElementsByClassName("grid")[0];
+
+  /* Clear the board */
+  grid.innerHTML = "";
 
   /* Iterate through the board and create cells on the webpage. */
   for (let row = 0; row < board.length; row++) {
@@ -96,33 +147,47 @@ function generateBoard() {
       grid.append(divCell);
     }
   }
+
+  /* Define start and end rows */
+  let startRow = getRandomInt(6);
+  let startCol = getRandomInt(6);
+  let endRow = getRandomInt(6);
+  let endCol = getRandomInt(6);
+
+  /* Make sure the end cell position isnt within 1 cell of the start cell. */
+  while (
+    (startRow === endRow ||
+      startRow + 1 === endRow ||
+      startRow - 1 === endRow) &&
+    (startCol === endCol || startCol + 1 === endCol || startCol - 1 === endCol)
+  ) {
+    endRow = getRandomInt(6);
+    endCol = getRandomInt(6);
+  }
+
+  /* Find start and end cell elements */
+  let startCell = locateElement(startRow, startCol);
+  let endCell = locateElement(endRow, endCol);
+
+  board[startRow][startCol] += "S";
+  board[endRow][endCol] += "E";
 }
 
-generateBoard();
-
+/* Get a random integer from 0 to n */
 function getRandomInt(max) {
   return Math.floor(Math.random() * max);
 }
 
+/* Locate a cell div on the board with its row and column */
 function locateElement(row, col) {
   return document.querySelector(`[row="${row}"][col="${col}"]`);
 }
 
-let startRow = getRandomInt(6);
-let startCol = getRandomInt(6);
-let endRow = getRandomInt(6);
-let endCol = getRandomInt(6);
+buildBoard();
+generateBoard();
 
-while (
-  (startRow === endRow || startRow + 1 === endRow || startRow - 1 === endRow) &&
-  (startCol === endCol || startCol + 1 === endCol || startCol - 1 === endCol)
-) {
-  endRow = getRandomInt(6);
-  endCol = getRandomInt(6);
-}
-
-let startCell = locateElement(startRow, startCol);
-let endCell = locateElement(endRow, endCol);
-
+/* Add the start and end classes to the correspoding cells */
 startCell.classList.add("start");
 endCell.classList.add("end");
+
+cellPath.push([startRow, startCol]);

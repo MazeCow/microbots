@@ -160,10 +160,12 @@ header {
 }
 
 .cell.green {
+  color: white;
   background-color: green;
 }
 
 .cell.red {
+  color: white;
   background-color: red;
 }
 
@@ -173,6 +175,7 @@ header {
 
 .cell.blue {
   background-color: blue;
+  color: white;
 }
 
 .cell.white {
@@ -208,16 +211,16 @@ header {
 }
 
 .end {
-  border: 5px solid rgb(9, 255, 0);
-  margin: -5px;
+  border: 7px solid rgb(9, 255, 0);
+  margin: -7px;
   border-radius: 10px;
   z-index: 1;
   box-sizing: content-box;
 }
 
 .start {
-  border: 5px solid rgb(255, 0, 255);
-  margin: -5px;
+  border: 7px solid violet;
+  margin: -7px;
   border-radius: 10px;
   z-index: 2;
   box-sizing: content-box;
