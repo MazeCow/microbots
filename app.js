@@ -38,20 +38,23 @@ const colorDict = {
 /* The current path */
 let cellPath = [];
 
-function rotateMatrix(clockwise) {
+function rotateMatrix(index, clockwise) {
+  let matrix = matrices[index];
   if (clockwise) {
-    let temp = matrices[0];
-    matrices[0] = matrices[3];
-    matrices[3] = matrices[2];
-    matrices[2] = matrices[1];
-    matrices[1] = temp;
+    matrix = [
+      [matrix[2][0], matrix[1][0], matrix[0][0]],
+      [matrix[2][1], matrix[1][1], matrix[0][1]],
+      [matrix[2][2], matrix[1][2], matrix[0][2]],
+    ];
   } else {
-    let temp = matrices[0];
-    matrices[0] = matrices[1];
-    matrices[1] = matrices[2];
-    matrices[2] = matrices[3];
-    matrices[3] = temp;
+    matrix = [
+      [matrix[0][2], matrix[1][2], matrix[2][2]],
+      [matrix[0][1], matrix[1][1], matrix[2][1]],
+      [matrix[0][0], matrix[1][0], matrix[2][0]],
+    ];
   }
+
+  matrices[index] = matrix;
   buildBoard();
   generateBoard();
 }
