@@ -1,29 +1,45 @@
-/* Board matricies */
-const matrices = [
-  [
-    ["P5", "P2", "P3"],
-    ["R6", "R4", "Y3"],
-    ["B4", "G5", "G3"],
-  ],
-  [
-    ["Y2", "W1", "B1"],
-    ["W2", "G2", "R2"],
-    ["P4", "G6", "W4"],
-  ],
-  [
-    ["W6", "B6", "B2"],
-    ["R3", "Y4", "W3"],
-    ["B3", "G4", "W5"],
-  ],
-  [
-    ["P6", "Y5", "P1"],
-    ["R1", "B5", "Y6"],
-    ["G1", "R5", "Y1"],
-  ],
+/* Board */
+const board = [
+  ["P5", "P2", "P3", "Y2", "W1", "B1"],
+  ["R6", "R4", "Y3", "W2", "G2", "R2"],
+  ["B4", "G5", "G3", "P4", "G6", "W4"],
+  ["W6", "B6", "B2", "R3", "Y4", "W3"],
+  ["R3", "Y4", "W3", "B3", "G4", "W5"],
+  ["P6", "Y5", "P1", "G1", "R5", "Y1"],
 ];
 
-/* Complete board */
-const board = [[] * 6];
+function splitBoard() {
+  const matricies = [];
+  let matrix1 = [
+    [board[0][0], board[0][1], board[0][2]],
+    [board[1][0], board[1][1], board[1][2]],
+    [board[2][0], board[2][1], board[2][2]],
+  ];
+
+  let matrix2 = [
+    [board[0][3], board[0][4], board[0][5]],
+    [board[1][3], board[1][4], board[1][5]],
+    [board[2][3], board[2][4], board[2][5]],
+  ];
+
+  let matrix3 = [
+    [board[3][0], board[3][1], board[3][2]],
+    [board[4][0], board[4][1], board[4][2]],
+    [board[5][0], board[5][1], board[5][2]],
+  ];
+
+  let matrix4 = [
+    [board[3][3], board[3][4], board[3][5]],
+    [board[4][3], board[4][4], board[4][5]],
+    [board[5][3], board[5][4], board[5][5]],
+  ];
+
+  matricies.push(matrix1);
+  matricies.push(matrix2);
+  matricies.push(matrix3);
+  matricies.push(matrix4);
+  return matricies;
+}
 
 /* Color dictionary used to convert letters to the corresponding colors */
 const colorDict = {
@@ -39,7 +55,8 @@ const colorDict = {
 let cellPath = [];
 
 function rotateMatrix(index, clockwise) {
-  let matrix = matrices[index];
+  let matricies = splitBoard(board);
+  let matrix = matricies[index];
   if (clockwise) {
     matrix = [
       [matrix[2][0], matrix[1][0], matrix[0][0]],
@@ -54,23 +71,30 @@ function rotateMatrix(index, clockwise) {
     ];
   }
 
-  matrices[index] = matrix;
-  buildBoard();
+  matricies[index] = matrix;
+  buildBoard(matricies);
   generateBoard();
 }
 
 /* Construct the board from the matricies. */
-function buildBoard() {
+function buildBoard(matricies) {
+  if (matricies == undefined) {
+    matricies = splitBoard(board);
+  }
   for (let i = 0; i < 3; i++) {
-    board[i] = matrices[0][i].concat(matrices[1][i]);
-    board[i + 3] = matrices[2][i].concat(matrices[3][i]);
+    board[i] = matricies[0][i].concat(matricies[1][i]);
+    board[i + 3] = matricies[2][i].concat(matricies[3][i]);
   }
   console.log(board);
 }
 
 /* Extract the color and number from a cell string */
 function parseCellString(string) {
-  return [colorDict[string.substring(0, 1)], string.substring(1, 2)];
+  return [
+    colorDict[string.substring(0, 1)],
+    string.substring(1, 2),
+    string.substring(2, 3),
+  ];
 }
 
 /* Check the validity of a movement between two cells */
@@ -115,42 +139,8 @@ function clickCell() {
   }
 }
 
-/* Generate the board */
-function generateBoard() {
-  /* Select board grid element on webpage */
-  const grid = document.getElementsByClassName("grid")[0];
-
-  /* Clear the board */
-  grid.innerHTML = "";
-
-  /* Iterate through the board and create cells on the webpage. */
-  for (let row = 0; row < board.length; row++) {
-    for (let col = 0; col < board[row].length; col++) {
-      /* Parse the data from the board cell. */
-      let cellData = parseCellString(board[row][col]);
-      let color = cellData[0];
-      let number = cellData[1];
-
-      /* Create a new cell and set it's attributes */
-      let divCell = document.createElement("div");
-      divCell.setAttribute("row", row);
-      divCell.setAttribute("col", col);
-      divCell.classList.add(color, "cell");
-
-      /* Create a number container and append it to the cell as a child. */
-      let textContainer = document.createElement("div");
-      textContainer.classList.add("number-container");
-      textContainer.innerHTML = number;
-      divCell.appendChild(textContainer);
-
-      /* Add an event listener to the cell. */
-      divCell.addEventListener("click", clickCell);
-
-      /* Append the cell to the grid */
-      grid.append(divCell);
-    }
-  }
-
+/* Place the start and end cells on the board */
+function placeStartEnd() {
   /* Define start and end rows */
   let startRow = getRandomInt(6);
   let startCol = getRandomInt(6);
@@ -168,12 +158,53 @@ function generateBoard() {
     endCol = getRandomInt(6);
   }
 
-  /* Find start and end cell elements */
-  let startCell = locateElement(startRow, startCol);
-  let endCell = locateElement(endRow, endCol);
-
   board[startRow][startCol] += "S";
   board[endRow][endCol] += "E";
+}
+
+/* Generate the board */
+function generateBoard() {
+  /* Select board grid element on webpage */
+  const grid = document.getElementsByClassName("grid")[0];
+
+  /* Clear the board */
+  grid.innerHTML = "";
+
+  /* Iterate through the board and create cells on the webpage. */
+  for (let row = 0; row < board.length; row++) {
+    for (let col = 0; col < board[row].length; col++) {
+      /* Parse the data from the board cell. */
+      let cellData = parseCellString(board[row][col]);
+      let color = cellData[0];
+      let number = cellData[1];
+      let property = cellData[2];
+
+      /* Create a new cell and set it's attributes */
+      let divCell = document.createElement("div");
+      divCell.setAttribute("row", row);
+      divCell.setAttribute("col", col);
+      divCell.classList.add(color, "cell");
+
+      /* Add a class to the cell based on it's property. */
+      if (property == "S") {
+        divCell.classList.add("start");
+      } else if (property == "E") {
+        divCell.classList.add("end");
+      }
+
+      /* Create a number container and append it to the cell as a child. */
+      let textContainer = document.createElement("div");
+      textContainer.classList.add("number-container");
+      textContainer.innerHTML = number;
+      divCell.appendChild(textContainer);
+
+      /* Add an event listener to the cell. */
+      divCell.addEventListener("click", clickCell);
+
+      /* Append the cell to the grid */
+      grid.append(divCell);
+    }
+  }
 }
 
 /* Get a random integer from 0 to n */
@@ -187,6 +218,7 @@ function locateElement(row, col) {
 }
 
 buildBoard();
+placeStartEnd();
 generateBoard();
 
 /* Add the start and end classes to the correspoding cells */
