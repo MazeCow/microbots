@@ -3,35 +3,37 @@ const board = [
   ["P5", "P2", "P3", "Y2", "W1", "B1"],
   ["R6", "R4", "Y3", "W2", "G2", "R2"],
   ["B4", "G5", "G3", "P4", "G6", "W4"],
-  ["W6", "B6", "B2", "R3", "Y4", "W3"],
-  ["R3", "Y4", "W3", "B3", "G4", "W5"],
-  ["P6", "Y5", "P1", "G1", "R5", "Y1"],
+  ["W6", "B6", "B2", "P6", "Y5", "P1"],
+  ["R3", "Y4", "W3", "R1", "B5", "Y6"],
+  ["B3", "G4", "W5", "G1", "R5", "Y1"],
 ];
+
+let tempBoard = [];
 
 function splitBoard() {
   const matricies = [];
   let matrix1 = [
-    [board[0][0], board[0][1], board[0][2]],
-    [board[1][0], board[1][1], board[1][2]],
-    [board[2][0], board[2][1], board[2][2]],
+    [tempBoard[0][0], tempBoard[0][1], tempBoard[0][2]],
+    [tempBoard[1][0], tempBoard[1][1], tempBoard[1][2]],
+    [tempBoard[2][0], tempBoard[2][1], tempBoard[2][2]],
   ];
 
   let matrix2 = [
-    [board[0][3], board[0][4], board[0][5]],
-    [board[1][3], board[1][4], board[1][5]],
-    [board[2][3], board[2][4], board[2][5]],
+    [tempBoard[0][3], tempBoard[0][4], tempBoard[0][5]],
+    [tempBoard[1][3], tempBoard[1][4], tempBoard[1][5]],
+    [tempBoard[2][3], tempBoard[2][4], tempBoard[2][5]],
   ];
 
   let matrix3 = [
-    [board[3][0], board[3][1], board[3][2]],
-    [board[4][0], board[4][1], board[4][2]],
-    [board[5][0], board[5][1], board[5][2]],
+    [tempBoard[3][0], tempBoard[3][1], tempBoard[3][2]],
+    [tempBoard[4][0], tempBoard[4][1], tempBoard[4][2]],
+    [tempBoard[5][0], tempBoard[5][1], tempBoard[5][2]],
   ];
 
   let matrix4 = [
-    [board[3][3], board[3][4], board[3][5]],
-    [board[4][3], board[4][4], board[4][5]],
-    [board[5][3], board[5][4], board[5][5]],
+    [tempBoard[3][3], tempBoard[3][4], tempBoard[3][5]],
+    [tempBoard[4][3], tempBoard[4][4], tempBoard[4][5]],
+    [tempBoard[5][3], tempBoard[5][4], tempBoard[5][5]],
   ];
 
   matricies.push(matrix1);
@@ -55,7 +57,7 @@ const colorDict = {
 let cellPath = [];
 
 function rotateMatrix(index, clockwise) {
-  let matricies = splitBoard(board);
+  let matricies = splitBoard(tempBoard);
   let matrix = matricies[index];
   if (clockwise) {
     matrix = [
@@ -78,14 +80,15 @@ function rotateMatrix(index, clockwise) {
 
 /* Construct the board from the matricies. */
 function buildBoard(matricies) {
+  tempBoard = structuredClone(board);
   if (matricies == undefined) {
-    matricies = splitBoard(board);
+    matricies = splitBoard(tempBoard);
   }
   for (let i = 0; i < 3; i++) {
-    board[i] = matricies[0][i].concat(matricies[1][i]);
-    board[i + 3] = matricies[2][i].concat(matricies[3][i]);
+    tempBoard[i] = matricies[0][i].concat(matricies[1][i]);
+    tempBoard[i + 3] = matricies[2][i].concat(matricies[3][i]);
   }
-  console.log(board);
+  console.log(tempBoard);
 }
 
 /* Extract the color and number from a cell string */
@@ -99,12 +102,12 @@ function parseCellString(string) {
 
 /* Check the validity of a movement between two cells */
 function checkMoveValidity(row1, col1, row2, col2) {
-  let cell1 = board[row1][col1];
+  let cell1 = tempBoard[row1][col1];
   let color1 = colorDict[cell1.substring(0, 1)];
   let number1 = cell1.substring(1, 2);
   console.log(`CELL1: ${cell1}, ROW: ${row1}, COL: ${col1}`);
 
-  let cell2 = board[row2][col2];
+  let cell2 = tempBoard[row2][col2];
   let color2 = colorDict[cell2.substring(0, 1)];
   let number2 = cell2.substring(1, 2);
   console.log(`CELL2: ${cell2}, ROW: ${row2}, COL: ${col2}`);
@@ -119,11 +122,25 @@ function checkMoveValidity(row1, col1, row2, col2) {
   }
 }
 
+/* Check for win */
+function checkWin(row, col) {
+  if (tempBoard[row][col].includes("E")) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+function reportWin(moves) {
+  console.log(`You won in ${moves} move(s)!`);
+  openLightbox(moves);
+  cellPath = [];
+}
+
 /* Function used as an event for cell clicks. */
 function clickCell() {
   let row = parseInt(this.getAttribute("row"));
   let col = parseInt(this.getAttribute("col"));
-
   if (
     checkMoveValidity(
       cellPath[cellPath.length - 1][0],
@@ -134,6 +151,9 @@ function clickCell() {
   ) {
     console.log("Valid move.");
     cellPath.push([row, col]);
+    if (checkWin(row, col)) {
+      reportWin(cellPath.length - 1);
+    }
   } else {
     console.log("Invalid move.");
   }
@@ -147,6 +167,9 @@ function placeStartEnd() {
   let endRow = getRandomInt(6);
   let endCol = getRandomInt(6);
 
+  /* Add start pos to cellPath */
+  cellPath.push([startRow, startCol]);
+
   /* Make sure the end cell position isnt within 1 cell of the start cell. */
   while (
     (startRow === endRow ||
@@ -158,8 +181,8 @@ function placeStartEnd() {
     endCol = getRandomInt(6);
   }
 
-  board[startRow][startCol] += "S";
-  board[endRow][endCol] += "E";
+  tempBoard[startRow][startCol] += "S";
+  tempBoard[endRow][endCol] += "E";
 }
 
 /* Generate the board */
@@ -171,10 +194,10 @@ function generateBoard() {
   grid.innerHTML = "";
 
   /* Iterate through the board and create cells on the webpage. */
-  for (let row = 0; row < board.length; row++) {
-    for (let col = 0; col < board[row].length; col++) {
+  for (let row = 0; row < tempBoard.length; row++) {
+    for (let col = 0; col < tempBoard[row].length; col++) {
       /* Parse the data from the board cell. */
-      let cellData = parseCellString(board[row][col]);
+      let cellData = parseCellString(tempBoard[row][col]);
       let color = cellData[0];
       let number = cellData[1];
       let property = cellData[2];
@@ -221,8 +244,17 @@ buildBoard();
 placeStartEnd();
 generateBoard();
 
-/* Add the start and end classes to the correspoding cells */
-startCell.classList.add("start");
-endCell.classList.add("end");
+function closeLightbox() {
+  const lightbox = document.getElementsByClassName("lightbox")[0];
+  lightbox.classList.toggle("hidden");
+  buildBoard();
+  placeStartEnd();
+  generateBoard();
+}
 
-cellPath.push([startRow, startCol]);
+function openLightbox(moves) {
+  const lightbox = document.getElementsByClassName("lightbox")[0];
+  const movesText = document.getElementById("moves");
+  movesText.innerHTML = moves;
+  lightbox.classList.toggle("hidden");
+}

@@ -225,3 +225,28 @@ header {
   z-index: 2;
   box-sizing: content-box;
 }
+
+.hidden {
+  display: none !important;
+}
+
+.lightbox {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  z-index: 3;
+}
+
+.lightbox-content {
+  margin: auto;
+  padding: 20px;
+  border-radius: 10px;
+  background-color: white;
+  justify-items: center;
+  align-items: center;
+  text-align: center;
+}

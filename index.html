@@ -7,6 +7,12 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
+    <div class="lightbox hidden">
+      <div class="lightbox-content">
+        <p id="win-message">You won in <span id="moves"></span> move(s)!</p>
+        <button onclick="closeLightbox()">Close</button>
+      </div>
+    </div>
     <header>
       <h2>Microbots</h2>
       <p>
