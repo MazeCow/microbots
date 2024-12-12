@@ -1,80 +1,88 @@
+const colors = ["red", "yellow", "green", "blue", "pink", "white"];
+
 class Cell {
   constructor(color, number) {
-    this.color = color;
+    this.color = colors[color];
     this.number = number;
-    this.isStart = false;
-    this.isEnd = false;
-    this.occupied = false;
+    this._isStart = false;
+    this._isEnd = false;
+    this._isOccupied = false;
+    this._row = null;
+    this._col = null;
+  }
+}
+
+class BoardTools {
+  /* Find a cell div with a row and column. */
+  static findCellDiv(row, col) {
+    const grid = document.getElementsByClassName("grid")[0];
+    return grid.children[row * 6 + col];
+  }
+
+  /* Get a random integer from 0 to max. */
+  static randInt(max) {
+    return Math.floor(Math.random() * max);
   }
 }
 
 class Board {
-  constructor(gridContainer) {
+  constructor() {
     this._board = [
       [
-        new Cell("pink", 5),
-        new Cell("pink", 2),
-        new Cell("pink", 3),
-        new Cell("yellow", 2),
-        new Cell("white", 1),
-        new Cell("blue", 1),
+        new Cell(4, 5),
+        new Cell(4, 2),
+        new Cell(4, 3),
+        new Cell(1, 2),
+        new Cell(5, 1),
+        new Cell(3, 1),
       ],
       [
-        new Cell("red", 6),
-        new Cell("red", 4),
-        new Cell("yellow", 3),
-        new Cell("white", 2),
-        new Cell("green", 2),
-        new Cell("red", 2),
+        new Cell(0, 6),
+        new Cell(0, 4),
+        new Cell(1, 3),
+        new Cell(5, 2),
+        new Cell(2, 2),
+        new Cell(0, 2),
       ],
       [
-        new Cell("blue", 4),
-        new Cell("green", 5),
-        new Cell("green", 3),
-        new Cell("pink", 4),
-        new Cell("green", 6),
-        new Cell("white", 4),
+        new Cell(3, 4),
+        new Cell(2, 5),
+        new Cell(2, 3),
+        new Cell(4, 4),
+        new Cell(2, 6),
+        new Cell(5, 4),
       ],
       [
-        new Cell("white", 6),
-        new Cell("blue", 6),
-        new Cell("blue", 2),
-        new Cell("pink", 6),
-        new Cell("yellow", 5),
-        new Cell("pink", 1),
+        new Cell(5, 6),
+        new Cell(3, 6),
+        new Cell(3, 2),
+        new Cell(4, 6),
+        new Cell(1, 5),
+        new Cell(4, 1),
       ],
       [
-        new Cell("red", 3),
-        new Cell("yellow", 4),
-        new Cell("white", 3),
-        new Cell("red", 1),
-        new Cell("blue", 5),
-        new Cell("yellow", 6),
+        new Cell(0, 3),
+        new Cell(1, 4),
+        new Cell(5, 3),
+        new Cell(0, 1),
+        new Cell(3, 5),
+        new Cell(1, 6),
       ],
       [
-        new Cell("blue", 3),
-        new Cell("green", 4),
-        new Cell("white", 5),
-        new Cell("green", 1),
-        new Cell("red", 5),
-        new Cell("yellow", 1),
+        new Cell(3, 3),
+        new Cell(2, 4),
+        new Cell(5, 5),
+        new Cell(2, 1),
+        new Cell(0, 5),
+        new Cell(1, 1),
       ],
     ];
-    this.gridContainer = gridContainer;
-    this.startCell = null;
-    this.endCell = null;
-    this.placeStartEndCells();
-    this.generateBoard();
-    this.movementHandler = new MovementHandler(this);
-  }
-
-  /* Get a random integer from 0 to max. */
-  getRandomInt(max) {
-    return Math.floor(Math.random() * max);
+    this.grid = document.getElementsByClassName("grid")[0];
+    this.place();
   }
 
   /* Return a 2d array of the given ranges. */
-  extractBoardMatrix(rowStart, rowEnd, colStart, colEnd) {
+  getArea(rowStart, rowEnd, colStart, colEnd) {
     let extractedMatrix = [];
     for (let row = rowStart; row < rowEnd; row++) {
       let rows = [];
@@ -87,18 +95,18 @@ class Board {
   }
 
   /* Returns an array of the board's four quadrants. */
-  splitBoard() {
+  divide() {
     return [
-      this.extractBoardMatrix(0, 3, 0, 3),
-      this.extractBoardMatrix(0, 3, 3, 6),
-      this.extractBoardMatrix(3, 6, 0, 3),
-      this.extractBoardMatrix(3, 6, 3, 6),
+      this.getArea(0, 3, 0, 3),
+      this.getArea(0, 3, 3, 6),
+      this.getArea(3, 6, 0, 3),
+      this.getArea(3, 6, 3, 6),
     ];
   }
 
   /* Rotate and return a matrix from the board. */
-  rotateMatrix(index, clockwise) {
-    let sections = this.splitBoard();
+  rotate(index, clockwise) {
+    let sections = this.divide();
     let matrix = sections[index];
 
     /* Temporary matrix for rotation. */
@@ -121,16 +129,14 @@ class Board {
       }
     }
     sections[index] = tempMatrix;
-    this.buildBoard(sections);
-    console.log(sections);
-    this.generateBoard();
+    this.recombine(sections);
   }
 
   /* Builds the board from a set of four matricies. */
-  buildBoard(matricies) {
+  recombine(matricies) {
     /* Get the quadrants of the board if they were not provided. */
     if (matricies == undefined) {
-      matricies = this.splitBoard();
+      matricies = this.divide();
     }
 
     /* Recombine all the matricies . */
@@ -147,39 +153,10 @@ class Board {
     this._board = matrixRows;
   }
 
-  /* Place the start and end cells on the board. */
-  placeStartEndCells() {
-    /* Define start and end rows */
-    let [startRow, startCol] = [this.getRandomInt(6), this.getRandomInt(6)];
-    let [endRow, endCol] = [this.getRandomInt(6), this.getRandomInt(6)];
-
-    /* Add start pos to cellPath */
-    cellPath.push([startRow, startCol]);
-
-    /* Make sure the end cell position isnt within 1 cell of the start cell. */
-    while (
-      Math.abs(startRow - endRow) <= 1 &&
-      Math.abs(startCol - endCol) <= 1
-    ) {
-      [endRow, endCol] = [this.getRandomInt(6), this.getRandomInt(6)];
-    }
-
-    /* Set the board's start and end cell properties. */
-    this.startCell = [startRow, startCol];
-    this.endCell = [endRow, endCol];
-
-    /* Apply appropriate properties to the start and end cells. */
-    this._board[startRow][startCol].isStart = true;
-    this._board[endRow][endCol].isEnd = true;
-  }
-
   /* Generate the HTML of the board inside of the Board's container. */
-  generateBoard() {
-    /* Select board grid element on webpage */
-    this.gridContainer.classList.add("grid");
-
+  place() {
     /* Clear the board */
-    grid.innerHTML = "";
+    this.grid.innerHTML = "";
 
     /* Iterate through the board and create cells on the webpage. */
     for (let row = 0; row < this._board.length; row++) {
@@ -189,75 +166,61 @@ class Board {
 
         /* Create a new cell and set it's attributes */
         let divCell = document.createElement("div");
-        divCell.setAttribute("row", row);
-        divCell.setAttribute("col", col);
-        divCell.classList.add(cell.color, "cell");
 
         /* Also set it's classes. */
+        divCell.classList.add(cell.color, "cell");
         if (cell.isStart) {
           divCell.classList.add("start");
         } else if (cell.isEnd) {
           divCell.classList.add("end");
         }
 
-        /* Create a number container and append it to the cell as a child. */
-        let textContainer = document.createElement("div");
-        textContainer.classList.add("number-container");
-        textContainer.innerHTML = cell.number;
-        divCell.appendChild(textContainer);
-
-        /* Add an event listener to the cell. */
-        divCell.addEventListener("click", clickCell);
+        /* Set the number value. */
+        divCell.innerHTML = cell.number;
 
         /* Append the cell to the grid */
-        grid.append(divCell);
+        this.grid.append(divCell);
       }
     }
   }
 }
 
 class MovementHandler {
-  constructor(board) {
-    this.board = board;
-    this.addClickListeners();
+  constructor() {
+    this.startPos = this.randomStartPos();
+    this.endPos = this.randomEndPos();
+    this.movementPath = [this.startPos];
   }
 
-  addClickListeners() {
-    for (let row = 0; row < this.board._board.length; row++) {
-      for (let col = 0; col < this.board._board.length; col++) {
-        const cell = this.board.gridContainer.querySelector(
-          `[row="${row}"][col="${col}"]`
-        );
-        cell.addEventListener("click", clickCell());
-      }
+  /* Returns the move count. */
+  get moveCount() {
+    return this.moveList.length;
+  }
+
+  /* Returns the currently occupied cell. */
+  get occupiedCell() {
+    return this.board.occupiedCell;
+  }
+
+  randomStartPos() {
+    return [BoardTools.getRandomInt(6), BoardTools.getRandomInt(6)];
+  }
+  randomEndPos() {
+    let [endRow, endCol] = [
+      BoardTools.getRandomInt(6),
+      BoardTools.getRandomInt(6),
+    ];
+    /* Make sure the end cell position isnt within 1 cell of the start cell. */
+    while (
+      Math.abs(startPos[0] - endRow) <= 1 &&
+      Math.abs(startPos[1] - endCol) <= 1
+    ) {
+      [endRow, endCol] = [
+        BoardTools.getRandomInt(6),
+        BoardTools.getRandomInt(6),
+      ];
     }
   }
-
-  clickCell() {
-    console.log("clicked!");
-  }
 }
 
-/* The current path */
-let cellPath = [];
-
-function clickCell() {
-  return;
-}
-
-function closeLightbox() {
-  const lightbox = document.getElementsByClassName("lightbox")[0];
-  lightbox.classList.toggle("hidden");
-  /* Rebuild board here when that function is available. */
-}
-
-function openLightbox(moves) {
-  const lightbox = document.getElementsByClassName("lightbox")[0];
-  const movesText = document.getElementById("moves");
-  movesText.innerHTML = moves;
-  lightbox.classList.toggle("hidden");
-}
-
-const grid = document.getElementsByClassName("grid")[0];
-
-board = new Board(grid);
+const board = new Board();
