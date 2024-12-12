@@ -9,7 +9,7 @@ class Cell {
 }
 
 class Board {
-  constructor() {
+  constructor(gridContainer) {
     this._board = [
       [
         new Cell("pink", 5),
@@ -60,39 +60,34 @@ class Board {
         new Cell("yellow", 1),
       ],
     ];
+    this.gridContainer = gridContainer;
+    this.startCell = null;
+    this.endCell = null;
+    this.placeStartEndCells();
+    this.generateBoard();
+    this.movementHandler = new MovementHandler(this);
   }
 
-  /* Get a random integer from 0 to n */
+  /* Get a random integer from 0 to max. */
   getRandomInt(max) {
     return Math.floor(Math.random() * max);
   }
 
+  /* Return a 2d array of the given ranges. */
   extractBoardMatrix(rowStart, rowEnd, colStart, colEnd) {
     let extractedMatrix = [];
     for (let row = rowStart; row < rowEnd; row++) {
       let rows = [];
       for (let col = colStart; col < colEnd; col++) {
-        try {
-          rows.push(this._board[row][col]);
-        } catch (error) {
-          alert(JSON.stringify(this._board));
-
-          console.error(error);
-        }
+        rows.push(this._board[row][col]);
       }
       extractedMatrix.push(rows);
     }
     return extractedMatrix;
   }
 
+  /* Returns an array of the board's four quadrants. */
   splitBoard() {
-    const arr = [
-      this.extractBoardMatrix(0, 3, 0, 3),
-      this.extractBoardMatrix(0, 3, 3, 6),
-      this.extractBoardMatrix(3, 6, 0, 3),
-      this.extractBoardMatrix(3, 6, 3, 6),
-    ];
-    alert(JSON.stringify(arr));
     return [
       this.extractBoardMatrix(0, 3, 0, 3),
       this.extractBoardMatrix(0, 3, 3, 6),
@@ -102,47 +97,58 @@ class Board {
   }
 
   /* Rotate and return a matrix from the board. */
-  /* The index represents the quadrant of the board in order from top left to bottom right. */
   rotateMatrix(index, clockwise) {
-    let sections = this.splitBoard(this._board);
+    let sections = this.splitBoard();
     let matrix = sections[index];
+
     /* Temporary matrix for rotation. */
     let tempMatrix = [];
     if (clockwise) {
-      for (let row = 2; row >= 0; row--) {
+      for (let col = 0; col < 3; col++) {
         let rowArray = [];
-        for (let col = 0; col < 3; col++) {
+        for (let row = 2; row >= 0; row--) {
           rowArray.push(matrix[row][col]);
         }
         tempMatrix.push(rowArray);
       }
     } else {
-      for (let row = 0; row < 3; row++) {
+      for (let col = 2; col >= 0; col--) {
         let rowArray = [];
-        for (let col = 2; col >= 0; col--) {
+        for (let row = 0; row < 3; row++) {
           rowArray.push(matrix[row][col]);
         }
         tempMatrix.push(rowArray);
       }
     }
     sections[index] = tempMatrix;
-    this._board = this.buildBoard(sections);
+    this.buildBoard(sections);
+    console.log(sections);
+    this.generateBoard();
   }
 
+  /* Builds the board from a set of four matricies. */
   buildBoard(matricies) {
-    matricies = this.splitBoard();
-    let matrixRows = [];
-    for (let i = 0; i < matricies.length / 2; i++) {
-      let matrixRow = matricies[i].map((row, j) => {
-        [...row, ...matricies[j]];
-      });
-      matrixRows.push(matrixRow);
+    /* Get the quadrants of the board if they were not provided. */
+    if (matricies == undefined) {
+      matricies = this.splitBoard();
     }
-    const b = [...matrixRows[0], ...matrixRows[1]];
-    return b;
+
+    /* Recombine all the matricies . */
+    let matrixRows = [];
+    for (let j = 0; j < 3; j += 2) {
+      let tempRows = [];
+      for (let i = 0; i < 3; i++) {
+        tempRows.push([...matricies[j][i], ...matricies[j + 1][i]]);
+      }
+      matrixRows.push(...tempRows);
+    }
+
+    /* Make matrixRows the new board. */
+    this._board = matrixRows;
   }
 
-  static placeStartEndCells() {
+  /* Place the start and end cells on the board. */
+  placeStartEndCells() {
     /* Define start and end rows */
     let [startRow, startCol] = [this.getRandomInt(6), this.getRandomInt(6)];
     let [endRow, endCol] = [this.getRandomInt(6), this.getRandomInt(6)];
@@ -157,14 +163,20 @@ class Board {
     ) {
       [endRow, endCol] = [this.getRandomInt(6), this.getRandomInt(6)];
     }
-    /* Todo: actually place the start and end spots. */
+
+    /* Set the board's start and end cell properties. */
+    this.startCell = [startRow, startCol];
+    this.endCell = [endRow, endCol];
+
+    /* Apply appropriate properties to the start and end cells. */
     this._board[startRow][startCol].isStart = true;
-    this._board[endRow][endCol].isStart = true;
+    this._board[endRow][endCol].isEnd = true;
   }
 
-  generateBoard(gridDiv) {
+  /* Generate the HTML of the board inside of the Board's container. */
+  generateBoard() {
     /* Select board grid element on webpage */
-    gridDiv.classList.add("grid");
+    this.gridContainer.classList.add("grid");
 
     /* Clear the board */
     grid.innerHTML = "";
@@ -180,6 +192,13 @@ class Board {
         divCell.setAttribute("row", row);
         divCell.setAttribute("col", col);
         divCell.classList.add(cell.color, "cell");
+
+        /* Also set it's classes. */
+        if (cell.isStart) {
+          divCell.classList.add("start");
+        } else if (cell.isEnd) {
+          divCell.classList.add("end");
+        }
 
         /* Create a number container and append it to the cell as a child. */
         let textContainer = document.createElement("div");
@@ -197,14 +216,34 @@ class Board {
   }
 }
 
+class MovementHandler {
+  constructor(board) {
+    this.board = board;
+    this.addClickListeners();
+  }
+
+  addClickListeners() {
+    for (let row = 0; row < this.board._board.length; row++) {
+      for (let col = 0; col < this.board._board.length; col++) {
+        const cell = this.board.gridContainer.querySelector(
+          `[row="${row}"][col="${col}"]`
+        );
+        cell.addEventListener("click", clickCell());
+      }
+    }
+  }
+
+  clickCell() {
+    console.log("clicked!");
+  }
+}
+
 /* The current path */
 let cellPath = [];
 
 function clickCell() {
   return;
 }
-
-/* Generate the board */
 
 function closeLightbox() {
   const lightbox = document.getElementsByClassName("lightbox")[0];
@@ -221,5 +260,4 @@ function openLightbox(moves) {
 
 const grid = document.getElementsByClassName("grid")[0];
 
-board = new Board();
-board.generateBoard(grid);
+board = new Board(grid);
