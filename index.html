@@ -23,45 +23,21 @@
     </header>
     <div class="board">
       <div class="top-buttons">
-        <div
-          class="rotate-btn left-arrow"
-          onclick="board.rotateMatrix(0, false)"
-        ></div>
-        <div
-          class="rotate-btn right-arrow"
-          onclick="board.rotateMatrix(1, true)"
-        ></div>
+        <div class="rotate-btn left-arrow" onclick="g.rotate(0, false)"></div>
+        <div class="rotate-btn right-arrow" onclick="g.rotate(1, true)"></div>
       </div>
       <div class="left-buttons">
-        <div
-          class="rotate-btn up-arrow"
-          onclick="board.rotateMatrix(0, true)"
-        ></div>
-        <div
-          class="rotate-btn down-arrow"
-          onclick="board.rotateMatrix(2, false)"
-        ></div>
+        <div class="rotate-btn up-arrow" onclick="g.rotate(0, true)"></div>
+        <div class="rotate-btn down-arrow" onclick="g.rotate(2, false)"></div>
       </div>
       <div class="grid"></div>
       <div class="right-buttons">
-        <div
-          class="rotate-btn up-arrow"
-          onclick="board.rotateMatrix(1, false)"
-        ></div>
-        <div
-          class="rotate-btn down-arrow"
-          onclick="board.rotateMatrix(3, true)"
-        ></div>
+        <div class="rotate-btn up-arrow" onclick="g.rotate(1, false)"></div>
+        <div class="rotate-btn down-arrow" onclick="g.rotate(3, true)"></div>
       </div>
       <div class="bottom-buttons">
-        <div
-          class="rotate-btn left-arrow"
-          onclick="board.rotateMatrix(2, true)"
-        ></div>
-        <div
-          class="rotate-btn right-arrow"
-          onclick="board.rotateMatrix(3, false)"
-        ></div>
+        <div class="rotate-btn left-arrow" onclick="g.rotate(2, true)"></div>
+        <div class="rotate-btn right-arrow" onclick="g.rotate(3, false)"></div>
       </div>
     </div>
     <script src="app.js"></script>
