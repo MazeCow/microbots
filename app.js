@@ -223,10 +223,10 @@ class GameLogicHandler {
   }
 
   addClickListeners() {
-    for (let row = 0; row < this._board.length; row++) {
-      for (let col = 0; col < this._board.length; col++) {
+    for (let row = 0; row < this.board.length; row++) {
+      for (let col = 0; col < this.board.length; col++) {
         const cell = BoardTools.findCellDiv(row, col);
-        cell.addEventListener("click");
+        cell.addEventListener("click", this.movementHandler.clickCell());
       }
     }
   }
@@ -234,14 +234,15 @@ class GameLogicHandler {
 
 class MovementHandler {
   constructor(gameLogicHandler) {
+    this.gameLogicHandler = gameLogicHandler;
     this.startPos = this.randomStartPos();
     this.endPos = this.randomEndPos();
     this._path = [this.startPos];
     this.occupiedCell = this.startPos;
-    this.gameLogicHandler = gameLogicHandler;
   }
 
   get board() {
+    console.log(this.gameLogicHandler);
     return this.gameLogicHandler.board._board;
   }
 
@@ -251,18 +252,54 @@ class MovementHandler {
   }
 
   randomStartPos() {
-    return [BoardTools.randInt(6), BoardTools.randInt(6)];
+    /* Remove the start class from the old start cell. */
+    if (this.startPos) {
+      const oldStartCell = BoardTools.findCellDiv(
+        this.startPos[0],
+        this.startPos[1]
+      );
+      oldStartCell.classList.remove("start");
+      this.board[this.startPos[0]][this.startPos[1]].isStart = false;
+    }
+    /* Get a new start position and cell. */
+    let newStartPos = [BoardTools.randInt(6), BoardTools.randInt(6)];
+    const newStartCell = BoardTools.findCellDiv(newStartPos[0], newStartPos[1]);
+
+    /* Add the start class and property to the new start Cell. */
+    newStartCell.classList.add("start");
+    this.board[newStartPos[0]][newStartPos[1]].isStart = true;
+
+    /* Set and return the new start position. */
+    this.startPos = newStartPos;
+    return newStartPos;
   }
 
   randomEndPos() {
-    let [endRow, endCol] = [BoardTools.randInt(6), BoardTools.randInt(6)];
+    /* Remove the end class from the old end cell. */
+    if (this.endPos) {
+      const oldEndCell = BoardTools.findCellDiv(this.endPos[0], this.endPos[1]);
+      oldEndCell.classList.remove("end");
+      this.board[this.endPos[0]][this.endPos[1]].isEnd = false;
+    }
+
+    /* Get a new end cell. */
+    let newEndPos = [BoardTools.randInt(6), BoardTools.randInt(6)];
     /* Make sure the end cell position isnt within 1 cell of the start cell. */
     while (
-      Math.abs(this.startPos[0] - endRow) <= 1 &&
-      Math.abs(this.startPos[1] - endCol) <= 1
+      Math.abs(this.startPos[0] - newEndPos[0]) <= 1 &&
+      Math.abs(this.startPos[1] - newEndPos[1]) <= 1
     ) {
-      [endRow, endCol] = [BoardTools.randInt(6), BoardTools.randInt(6)];
+      newEndPos = [BoardTools.randInt(6), BoardTools.randInt(6)];
     }
+    const newEndCell = BoardTools.findCellDiv(newEndPos[0], newEndPos[1]);
+
+    /* Add the end class and property to the new end cell. */
+    newEndCell.classList.add("end");
+    this.board[newEndPos[0]][newEndPos[1]].isEnd = true;
+
+    /* Set and return the new start position. */
+    this.endPos = newEndPos;
+    return newEndPos;
   }
 
   validMove(startPos, endPos) {
@@ -292,18 +329,19 @@ class MovementHandler {
       this.occupiedCell[0],
       this.occupiedCell[1]
     );
+    board[this.occupiedCell[0]][this.occupiedCell[1]]._isOccupied = false;
     previousCell.classList.remove("occupied");
 
     /* Added occupied class to the new cell. */
-    const newCell = BoardTools.findCellDiv(
-      this.destinationCell[0],
-      this.destinationCell[1]
+    const destinationCell = BoardTools.findCellDiv(
+      this.destinationPos[0],
+      this.destinationPos[1]
     );
-    newCell.classList.add("occupied");
+    destinationCell.classList.add("occupied");
 
     /* Update path and current occupied cell. */
-    this._path.add(coords);
-    this.occupiedCell = coords;
+    this._path.add(destinationPos);
+    this.occupiedCell = destinationPos;
   }
 
   clickCell(event) {
