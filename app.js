@@ -21,8 +21,8 @@ class BoardTools {
 
   static getCellCoords(cell) {
     const grid = document.getElementsByClassName("grid")[0];
-    const index = grid.children.findIndex(cell);
-    return [Math.round((index + 1) / 6), (index + 1) % 6];
+    const index = [...grid.children].findIndex((child) => child === cell);
+    return [Math.floor(index / 6), index % 6];
   }
 
   /* Get a random integer from 0 to max. */
@@ -208,6 +208,7 @@ class GameLogicHandler {
   startGame() {
     this.ongoing = true;
     this.addClickListeners();
+    this.hideRotateBtns(false);
   }
 
   endGame() {
@@ -223,11 +224,19 @@ class GameLogicHandler {
   }
 
   addClickListeners() {
-    for (let row = 0; row < this.board.length; row++) {
-      for (let col = 0; col < this.board.length; col++) {
+    for (let row = 0; row < this.board._board.length; row++) {
+      for (let col = 0; col < this.board._board.length; col++) {
         const cell = BoardTools.findCellDiv(row, col);
-        cell.addEventListener("click", this.movementHandler.clickCell());
+        cell.addEventListener("click", this.movementHandler.clickCell);
       }
+    }
+  }
+
+  hideRotateBtns(visible) {
+    const rotateBtns = document.getElementsByClassName("rotate-btn");
+    console.log(rotateBtns);
+    for (const btn of rotateBtns) {
+      btn.style.display = visible ? "block" : "none";
     }
   }
 }
@@ -237,18 +246,18 @@ class MovementHandler {
     this.gameLogicHandler = gameLogicHandler;
     this.startPos = this.randomStartPos();
     this.endPos = this.randomEndPos();
-    this._path = [this.startPos];
+    this.path = [this.startPos];
     this.occupiedCell = this.startPos;
+    this.clickCell = this.clickCell.bind(this);
   }
 
   get board() {
-    console.log(this.gameLogicHandler);
     return this.gameLogicHandler.board._board;
   }
 
   /* Returns the move count. */
   get moveCount() {
-    return this._path.length;
+    return this.path.length;
   }
 
   randomStartPos() {
@@ -266,8 +275,9 @@ class MovementHandler {
     const newStartCell = BoardTools.findCellDiv(newStartPos[0], newStartPos[1]);
 
     /* Add the start class and property to the new start Cell. */
-    newStartCell.classList.add("start");
+    newStartCell.classList.add("start", "occupied");
     this.board[newStartPos[0]][newStartPos[1]].isStart = true;
+    this.board[newStartPos[0]][newStartPos[1]]._isOccupied = true;
 
     /* Set and return the new start position. */
     this.startPos = newStartPos;
@@ -303,8 +313,13 @@ class MovementHandler {
   }
 
   validMove(startPos, endPos) {
-    const startCell = board[startPos[0]][startPos[1]];
-    const destinationCell = board[endPos[0]][endPos[1]];
+    const startCell = this.board[startPos[0]][startPos[1]];
+    const destinationCell = this.board[endPos[0]][endPos[1]];
+
+    /* Checks if the start and end positions are the same. */
+    if (startCell == destinationCell) {
+      return false;
+    }
 
     /* Checks if the start and end destinations are in the same row or column. */
     if (startPos[0] != endPos[0] && startPos[1] != endPos[1]) {
@@ -321,6 +336,19 @@ class MovementHandler {
 
     /* The move is valid if it passes the other checks. */
     return true;
+    _ - CODE_WRITTEN_BY_ISAAC_TROST - _;
+  }
+
+  checkForWin() {
+    const win =
+      this.occupiedCell[0] === this.endPos[0] &&
+      this.occupiedCell[1] === this.endPos[1];
+    /* Exit function if the user didn't win. */
+    if (!win) {
+      return false;
+    }
+
+    console.log("Win.");
   }
 
   move(destinationPos) {
@@ -329,26 +357,31 @@ class MovementHandler {
       this.occupiedCell[0],
       this.occupiedCell[1]
     );
-    board[this.occupiedCell[0]][this.occupiedCell[1]]._isOccupied = false;
+    this.board[this.occupiedCell[0]][this.occupiedCell[1]]._isOccupied = false;
     previousCell.classList.remove("occupied");
 
     /* Added occupied class to the new cell. */
     const destinationCell = BoardTools.findCellDiv(
-      this.destinationPos[0],
-      this.destinationPos[1]
+      destinationPos[0],
+      destinationPos[1]
     );
     destinationCell.classList.add("occupied");
 
     /* Update path and current occupied cell. */
-    this._path.add(destinationPos);
+    this.path.push(destinationPos);
     this.occupiedCell = destinationPos;
+
+    /* Check for a win. */
+    this.checkForWin();
   }
 
   clickCell(event) {
     /* Gets the position of the clicked cell. */
     const destinationPos = BoardTools.getCellCoords(event.target);
-    const isValidMove = this.validMove(this.occupiedCell, endPos);
+    console.log("Destination Position:", destinationPos);
+    const isValidMove = this.validMove(this.occupiedCell, destinationPos);
     if (isValidMove) {
+      console.log("Valid cell move.");
       this.move(destinationPos);
     } else {
       console.log("Invalid cell move.");

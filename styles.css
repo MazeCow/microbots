@@ -150,6 +150,34 @@ header {
   font-size: min(7vw, 7vh);
 }
 
+.occupied:not(.start, .end) {
+  z-index: 3;
+  border-radius: 0px;
+  transform: scale(1.2);
+  animation: tilt-shaking 1s ease-in-out infinite;
+}
+
+@keyframes tilt-shaking {
+  0% {
+    transform: skewX(-5deg);
+  }
+  5% {
+    transform: skewX(5deg);
+  }
+  10% {
+    transform: skewX(-5deg);
+  }
+  15% {
+    transform: skewX(5deg);
+  }
+  20% {
+    transform: skewX(0deg);
+  }
+  100% {
+    transform: skewX(0deg);
+  }
+}
+
 .cell:hover {
   cursor: pointer;
   filter: brightness(0.9);
@@ -214,7 +242,7 @@ header {
   border: 7px solid rgb(9, 255, 0);
   margin: -7px;
   border-radius: 10px;
-  z-index: 1;
+  z-index: 4;
   box-sizing: content-box;
 }
 
@@ -222,7 +250,7 @@ header {
   border: 7px solid violet;
   margin: -7px;
   border-radius: 10px;
-  z-index: 2;
+  z-index: 3;
   box-sizing: content-box;
 }
 
